@@ -1,4 +1,4 @@
-=== GF Form Recovery Tool ===
+# GF Form Recovery Tool
 Contributors: topher1kenobe
 Requires at least: 4.7
 Tested up to: 4.7.4
@@ -10,7 +10,7 @@ If a Gravity Forms form submitter loses their "Save and Continue" Link, this wil
 
 NOTE: This plugin is based on Leland Fiegel's "Save and Continue Link Recovery for Gravity Forms" at https://wordpress.org/plugins/save-and-continue-link-recovery-for-gravity-forms/
 
-== Description ==
+## Description
 
 Gravity Forms 1.9 introduced a feature called [Save and Continue](https://www.gravityhelp.com/gravity-forms-v1-9-save-continue/) which allows form submitters to save their progress, and continue it later.
 
@@ -35,27 +35,27 @@ The idea behind this plugin is to provide a very basic way of recovering “Save
 
 Please note that Gravity Forms is a commercial plugin, which I am not affiliated with in any way.
 
-== Installation ==
+## Installation
 
 1. Upload the plugin files to the `/wp-content/plugins/save-and-continue-link-recovery-for-gravity-forms` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
 3. Find the “Save and Continue Link Recovery” admin page under the “Tools” menu.
 
-== Frequently Asked Questions ==
+## Frequently Asked Questions
 
-= Why can I activate this plugin when Gravity Forms is not even installed? =
+#### Why can I activate this plugin when Gravity Forms is not even installed?
 
 Technically, this plugin does not require Gravity Forms to function. All it does it read a database table that Gravity Forms uses to store incomplete submissions.
 
 Since that database table may persist even after Gravity Forms is deleted, I decided to not require Gravity Forms’s presence to use it.
 
-= Can I use this plugin to recover Save and Continue links for other forms plugins? =
+#### Can I use this plugin to recover Save and Continue links for other forms plugins?
 
 No. This only works for Gravity Forms. Other forms plugins may handle Save and Continue links in different ways.
 
 If I ever come across a similar need for another form plugin, I’ll make a new plugin just for that. This one will only ever work with Gravity Forms.
 
-== Changelog ==
+## Changelog
 
-= 1.0.0 =
+#### 1.0.0
 * Initial release
