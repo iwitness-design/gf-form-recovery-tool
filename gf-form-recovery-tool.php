@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: GF Form Recovery Tool
-Description: Lists saved Gravity Forms entries, and allows for emailing all or individuals. Based on this plugin: https://wordpress.org/plugins/gf-form-recovery-tool-for-gravity-forms/
+Description: Lists saved Gravity Forms entries, and allows for emailing all or individuals. Based on this plugin: https://wordpress.org/plugins/save-and-continue-link-recovery-tool-for-gravity-forms/
 Version: 1.0.0
 Author: iWitness Design, Topher
 Author URI: https://iwitnessdesign.com
