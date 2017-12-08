@@ -10,7 +10,7 @@ License: GPLv2 or Later
 License URI: LICENSE
 */
 
-// Exit if accessed directly.
+    // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -58,10 +58,8 @@ function iwdf_save_and_continue_link_recovery_admin() {
 
 	// Grab incomplete submissions
 	$incomplete_submissions = $wpdb->get_results(
-		"
-		SELECT form_id, date_created, email, ip, uuid, source_url
-		FROM $table_name
-		"
+		'SELECT form_id, date_created, email, ip, uuid, source_url
+		FROM `' . esc_sql( $table_name ) . '`'
 	);
 
 	echo '<div class="wrap">';
@@ -85,7 +83,7 @@ function iwdf_save_and_continue_link_recovery_admin() {
 				echo '<tr>';
 				echo '<td>' . esc_html( $incomplete_submission->form_id ) . '</td>';
 				echo '<td>' . esc_html( $incomplete_submission->date_created ) . '</td>';
-				echo '<td>' . esc_html( $incomplete_submission->email ) . '</td>';
+				echo '<td>' . sanitize_email( $incomplete_submission->email ) . '</td>';
 				echo '<td>' . esc_html( $incomplete_submission->ip ) . '</td>';
 				echo '<td>' . esc_html( $incomplete_submission->uuid ) . '</td>';
 				echo '<td><a href="' . trailingslashit( esc_url( $incomplete_submission->source_url ) ) . '?gf_token=' . esc_attr( $incomplete_submission->uuid ) . '" target="_blank">' . esc_html__( 'View Entry', 'save-and-continue-link-recovery' ) . '</a></td>';
