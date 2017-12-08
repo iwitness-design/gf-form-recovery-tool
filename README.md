@@ -1,9 +1,9 @@
 # GF Form Recovery Tool
-Contributors: topher1kenobe
-Requires at least: 4.7
-Tested up to: 4.7.4
-Stable tag: 1.0.0
-License: GPLv2 or later
+Contributors: topher1kenobe  
+Requires at least: 4.7  
+Tested up to: 4.7.4  
+Stable tag: 1.0.0  
+License: GPLv2 or later  
 License URI: LICENSE
 
 If a Gravity Forms form submitter loses their "Save and Continue" Link, this will help you recover it. It also allows for emailing to the user, and offers settings for emailing everyone periodically.
