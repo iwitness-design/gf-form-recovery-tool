@@ -49,61 +49,54 @@ add_filter( 'plugin_action_links', 'iwdf_gf_form_recovery_tool_add_action_links'
 /**
  * Make settings area
  */
-function iwdf_gf_form_settings() {
+add_action( 'cmb2_admin_init', 'iwdf_form_recovery_metabox' );
+/**
+ * Hook in and register a metabox to handle a theme options page and adds a menu item.
+ */
+function iwdf_form_recovery_metabox() {
+	$key = 'gf-form-recovery-tool';
 
-	// Start with an underscore to hide fields from custom fields list
-	$prefix = '_iwdf_gf_recovery_';
-
-	/**
-	 * Initiate the metabox
-	 */
-	$cmb = new_cmb2_box( array(
-		'id'            => 'test_metabox',
-		'title'         => __( 'Test Metabox', 'cmb2' ),
-		'context'       => 'normal',
-		'priority'      => 'high',
-		'show_names'    => true, // Show field names on the left
-		'object_types' => array( $this->admin_hook ),
+	$cmb_options = new_cmb2_box( array(
+		'id'           => 'iwdf_theme_options_page',
+		'title'        => 'Theme Options',
+		'object_types' => array( 'options-page' ),
+		'option_key'   => 'iwdf_theme_options',
+		'icon_url'     => 'dashicons-palmtree',
+		'display_cb'   => 'iwdf_theme_options_page_output', // Override the options-page form output (CMB2_Hookup::options_page_output()).
+		'description'  => 'Custom description', // Will be displayed via our display_cb.
 		'show_on'      => array(
 			// These are important, don't remove.
 			'key'   => 'options-page',
-			'value' => array( $this->key ),
+			'value' => array( $key ),
 		),
-	), $this->key, 'options-page' );
-
-	// Regular text field
-	$cmb->add_field( array(
-		'name'       => __( 'Test Text', 'cmb2' ),
-		'desc'       => __( 'field description (optional)', 'cmb2' ),
-		'id'         => $prefix . 'text',
-		'type'       => 'text',
-		'show_on_cb' => 'cmb2_hide_if_no_cats', // function should return a bool value
-		// 'sanitization_cb' => 'my_custom_sanitization', // custom sanitization callback parameter
-		// 'escape_cb'       => 'my_custom_escaping',  // custom escaping callback parameter
-		// 'on_front'        => false, // Optionally designate a field to wp-admin only
-		// 'repeatable'      => true,
 	) );
-
-	// URL text field
-	$cmb->add_field( array(
-		'name' => __( 'Website URL', 'cmb2' ),
-		'desc' => __( 'field description (optional)', 'cmb2' ),
-		'id'   => $prefix . 'url',
-		'type' => 'text_url',
-		// 'protocols' => array('http', 'https', 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet'), // Array of allowed protocols
-		// 'repeatable' => true,
-	) );
-
-	// Email text field
-	$cmb->add_field( array(
-		'name' => __( 'Test Text Email', 'cmb2' ),
-		'desc' => __( 'field description (optional)', 'cmb2' ),
-		'id'   => $prefix . 'email',
-		'type' => 'text_email',
-		// 'repeatable' => true,
+	$cmb_options->add_field( array(
+		'name'    => 'Site Background Color',
+		'desc'    => 'field description (optional)',
+		'id'      => 'bg_color',
+		'type'    => 'colorpicker',
+		'default' => '#ffffff',
 	) );
 }
-
+function iwdf_theme_options_page_output( $hookup ) {
+	// Output custom markup for the options-page.
+	?>
+    <div class="wrap cmb2-options-page option-<?php echo $hookup->option_key; ?>">
+		<?php if ( $hookup->cmb->prop( 'title' ) ) : ?>
+            <h2><?php echo wp_kses_post( $hookup->cmb->prop( 'title' ) ); ?></h2>
+		<?php endif; ?>
+		<?php if ( $hookup->cmb->prop( 'description' ) ) : ?>
+            <h2><?php echo wp_kses_post( $hookup->cmb->prop( 'description' ) ); ?></h2>
+		<?php endif; ?>
+        <form class="cmb-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" id="<?php echo $hookup->cmb->cmb_id; ?>" enctype="multipart/form-data" encoding="multipart/form-data">
+            <input type="hidden" name="action" value="<?php echo esc_attr( $hookup->option_key ); ?>">
+			<?php $hookup->options_page_metabox(); ?>
+			<?php submit_button( esc_attr( $hookup->cmb->prop( 'save_button' ) ), 'primary', 'submit-cmb' ); ?>
+        </form>
+    </div>
+	<?php
+	iwdf_gf_form_recovery_tool_admin();
+}
 
 /**
  * Add admin page
