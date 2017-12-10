@@ -27,7 +27,7 @@ function iwdf_gf_form_recovery_tool_menu() {
 	add_management_page( esc_html__( 'GF Form Recovery', 'gf-form-recovery-tool' ), esc_html__( 'GF Form Recovery', 'gf-form-recovery-tool' ), 'manage_options', 'gf-form-recovery-tool', 'iwdf_gf_form_recovery_tool_admin' );
 }
 
-add_action( 'admin_menu', 'iwdf_gf_form_recovery_tool_menu' );
+//add_action( 'admin_menu', 'iwdf_gf_form_recovery_tool_menu' );
 
 function iwdf_gf_form_recovery_tool_add_action_links( $actions, $plugin_file ) {
 	static $plugin;
@@ -54,16 +54,23 @@ add_action( 'cmb2_admin_init', 'iwdf_form_recovery_metabox' );
  * Hook in and register a metabox to handle a theme options page and adds a menu item.
  */
 function iwdf_form_recovery_metabox() {
+
+	$prefix = '_iwdf_email_';
+
 	$key = 'gf-form-recovery-tool';
 
 	$cmb_options = new_cmb2_box( array(
 		'id'           => 'iwdf_theme_options_page',
-		'title'        => 'Theme Options',
+		'parent_slug'  => 'tools.php',
+		'title'        => 'GF Form Recovery Settings',
+		'menu_title'   => 'GF Form Recovery',
 		'object_types' => array( 'options-page' ),
 		'option_key'   => 'iwdf_theme_options',
 		'icon_url'     => 'dashicons-palmtree',
-		'display_cb'   => 'iwdf_theme_options_page_output', // Override the options-page form output (CMB2_Hookup::options_page_output()).
-		'description'  => 'Custom description', // Will be displayed via our display_cb.
+		'display_cb'   => 'iwdf_theme_options_page_output',
+		// Override the options-page form output (CMB2_Hookup::options_page_output()).
+		'description'  => 'Email fields are used when sending an email to a user.',
+		// Will be displayed via our display_cb.
 		'show_on'      => array(
 			// These are important, don't remove.
 			'key'   => 'options-page',
@@ -71,13 +78,22 @@ function iwdf_form_recovery_metabox() {
 		),
 	) );
 	$cmb_options->add_field( array(
-		'name'    => 'Site Background Color',
-		'desc'    => 'field description (optional)',
-		'id'      => 'bg_color',
-		'type'    => 'colorpicker',
-		'default' => '#ffffff',
+		'name'    => 'Email Subject',
+		'id'      => $prefix . 'subject',
+		'type'    => 'text',
+		'default' => 'Your Craft3 Application',
+	) );
+
+	$cmb_options->add_field( array(
+		'name'    => 'Email Text',
+		'id'      => $prefix . 'text',
+		'type'    => 'wysiwyg',
+		'options' => array(
+			'textarea_rows' => get_option( 'default_post_edit_rows', 10 ),
+		)
 	) );
 }
+
 function iwdf_theme_options_page_output( $hookup ) {
 	// Output custom markup for the options-page.
 	?>
@@ -88,7 +104,8 @@ function iwdf_theme_options_page_output( $hookup ) {
 		<?php if ( $hookup->cmb->prop( 'description' ) ) : ?>
             <h2><?php echo wp_kses_post( $hookup->cmb->prop( 'description' ) ); ?></h2>
 		<?php endif; ?>
-        <form class="cmb-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" id="<?php echo $hookup->cmb->cmb_id; ?>" enctype="multipart/form-data" encoding="multipart/form-data">
+        <form class="cmb-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST"
+              id="<?php echo $hookup->cmb->cmb_id; ?>" enctype="multipart/form-data" encoding="multipart/form-data">
             <input type="hidden" name="action" value="<?php echo esc_attr( $hookup->option_key ); ?>">
 			<?php $hookup->options_page_metabox(); ?>
 			<?php submit_button( esc_attr( $hookup->cmb->prop( 'save_button' ) ), 'primary', 'submit-cmb' ); ?>
@@ -184,15 +201,19 @@ function iwdf_email_single() {
 		)
 		);
 
+		$mail_subject = iwdf_get_option( '_iwdf_email_subject' );
+		$mail_text    = iwdf_get_option( '_iwdf_email_text' );
+
 		if ( is_email( $submission->email ) ) {
 
 			// send an email
 			$to      = $submission->email;
-			$subject = 'Your Craft3 Application';
-			$message = 'Hi there! We\'d just like to remind you that you have a form to fill out!';
-			$message .= '<a href="' . trailingslashit( esc_url( $submission->source_url ) ) . '?gf_token=' . esc_attr( $submission->uuid ) . '">Click here to continue your form.</a>';
+			$subject = $mail_subject;
+			$message = wpautop( $mail_text );
+			$message .= "\n\n" . '<a href="' . trailingslashit( esc_url( $submission->source_url ) ) . '?gf_token=' . esc_attr( $submission->uuid ) . '">Click here to continue your form.</a>';
+			$headers = array('Content-Type: text/html; charset=UTF-8');
 
-			wp_mail( $to, $subject, $message );
+			wp_mail( $to, $subject, $message, $headers );
 
 			wp_redirect( admin_url( 'tools.php?page=gf-form-recovery-tool&email_success=yes' ) );
 			exit;
@@ -228,3 +249,29 @@ function iwdf_email_admin_notice__error() {
 }
 
 add_action( 'admin_notices', 'iwdf_email_admin_notice__error' );
+
+/**
+ * Wrapper function around cmb2_get_option
+ * @since  0.1.0
+ *
+ * @param  string $key Options array key
+ * @param  mixed $default Optional default value
+ *
+ * @return mixed           Option value
+ */
+function iwdf_get_option( $key = '', $default = false ) {
+	if ( function_exists( 'cmb2_get_option' ) ) {
+		// Use cmb2_get_option as it passes through some key filters.
+		return cmb2_get_option( 'gf-form-recovery-tool', $key, $default );
+	}
+	// Fallback to get_option if CMB2 is not loaded yet.
+	$opts = get_option( 'gf-form-recovery-tool', $default );
+	$val  = $default;
+	if ( 'all' == $key ) {
+		$val = $opts;
+	} elseif ( is_array( $opts ) && array_key_exists( $key, $opts ) && false !== $opts[ $key ] ) {
+		$val = $opts[ $key ];
+	}
+
+	return $val;
+}
