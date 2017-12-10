@@ -208,7 +208,7 @@ function iwdf_email_single() {
 
 			// send an email
 			$to      = $submission->email;
-			$subject = $mail_subject;
+			$subject = esc_attr( $mail_subject );
 			$message = wpautop( $mail_text );
 			$message .= "\n\n" . '<a href="' . trailingslashit( esc_url( $submission->source_url ) ) . '?gf_token=' . esc_attr( $submission->uuid ) . '">Click here to continue your form.</a>';
 			$headers = array('Content-Type: text/html; charset=UTF-8');
