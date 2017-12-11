@@ -252,7 +252,7 @@ add_action( 'admin_init', 'iwdf_email_all' );
  * Email single user
  */
 function iwdf_email_single() {
-	if ( is_admin() && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $_GET['gfuuid'] ) ) {
+	if ( is_admin() && ! empty( $_GET['page'] ) && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $_GET['gfuuid'] ) ) {
 
 		global $wpdb;
 
