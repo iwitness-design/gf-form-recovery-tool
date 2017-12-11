@@ -92,6 +92,13 @@ function iwdf_form_recovery_metabox() {
 			'textarea_rows' => get_option( 'default_post_edit_rows', 10 ),
 		)
 	) );
+
+	$cmb_options->add_field( array(
+		'name'        => 'Email All URL',
+		'description' => 'Visiting this URL will cause all listings below that have an email address to get an email reminder. Please use an external scheduler to call it. <hr> http://craft3.dev/wp-admin/tools.php?page=gf-form-recovery-tool&email_all=true',
+		'id'          => $prefix . 'all',
+		'type'        => 'title',
+	) );
 }
 
 function iwdf_theme_options_page_output( $hookup ) {
@@ -182,6 +189,66 @@ function iwdf_gf_form_recovery_tool_admin() {
 }
 
 /*
+ * Email engine
+ */
+function iwdf_emailer( $gfuuid, $email, $source_url ) {
+	if ( is_admin() && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $gfuuid ) && is_email( $email ) && ! empty( $source_url ) ) {
+
+
+		$mail_subject = iwdf_get_option( '_iwdf_email_subject' );
+		$mail_text    = iwdf_get_option( '_iwdf_email_text' );
+
+		if ( is_email( $email ) ) {
+
+			// send an email
+			$to      = $email;
+			$subject = esc_attr( $mail_subject );
+			$message = wpautop( $mail_text );
+			$message .= "\n\n" . '<a href="' . trailingslashit( esc_url( $source_url ) ) . '?gf_token=' . esc_attr( $gfuuid ) . '">Click here to continue your form.</a>';
+			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+			wp_mail( $to, $subject, $message, $headers );
+
+			return true;
+		}
+
+		return false;
+
+	}
+}
+
+/*
+ * Email All users with lost forms
+ */
+function iwdf_email_all() {
+	if ( is_admin() && ! empty( $_GET['page'] ) && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $_GET['email_all'] ) && 'true' == $_GET['email_all'] ) {
+
+		global $wpdb;
+
+		// go get the data about this row
+
+		// Make sure we're using the right database prefix
+		$table_name = $wpdb->prefix . 'rg_incomplete_submissions';
+
+		// Grab incomplete submissions
+		$submissions = $wpdb->get_results(
+			'SELECT email, uuid, source_url FROM `' . esc_sql( $table_name ) . "` WHERE `email` != ''"
+		);
+
+		foreach ( $submissions as $submission ) {
+			iwdf_emailer( $submission->uuid, $submission->email, $submission->source_url );
+		}
+
+		wp_redirect( admin_url( 'tools.php?page=gf-form-recovery-tool&email_all_success=yes' ) );
+		exit;
+
+	}
+}
+
+add_action( 'admin_init', 'iwdf_email_all' );
+
+
+/*
  * Email single user
  */
 function iwdf_email_single() {
@@ -201,20 +268,7 @@ function iwdf_email_single() {
 		)
 		);
 
-		$mail_subject = iwdf_get_option( '_iwdf_email_subject' );
-		$mail_text    = iwdf_get_option( '_iwdf_email_text' );
-
-		if ( is_email( $submission->email ) ) {
-
-			// send an email
-			$to      = $submission->email;
-			$subject = esc_attr( $mail_subject );
-			$message = wpautop( $mail_text );
-			$message .= "\n\n" . '<a href="' . trailingslashit( esc_url( $submission->source_url ) ) . '?gf_token=' . esc_attr( $submission->uuid ) . '">Click here to continue your form.</a>';
-			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-
-			wp_mail( $to, $subject, $message, $headers );
-
+		if ( iwdf_emailer( $submission->uuid, $submission->email, $submission->source_url ) ) {
 			wp_redirect( admin_url( 'tools.php?page=gf-form-recovery-tool&email_success=yes' ) );
 			exit;
 		} else {
@@ -228,10 +282,21 @@ function iwdf_email_single() {
 add_action( 'admin_init', 'iwdf_email_single' );
 
 function iwdf_email_admin_notice__success() {
-	if ( is_admin() && 'yes' == $_GET['email_success'] ) {
+
+	// single email success
+	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'yes' == $_GET['email_success'] ) {
 		?>
         <div class="notice notice-success is-dismissible">
             <p><?php _e( 'Email sent successfully.', 'gf-form-recovery-tool' ); ?></p>
+        </div>
+		<?php
+	}
+
+	// after a whole loop of emails success
+	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'yes' == $_GET['email_all_success'] ) {
+		?>
+        <div class="notice notice-success is-dismissible">
+            <p><?php _e( 'Emails sent successfully to ALL forms with an email address.', 'gf-form-recovery-tool' ); ?></p>
         </div>
 		<?php
 	}
@@ -240,7 +305,7 @@ function iwdf_email_admin_notice__success() {
 add_action( 'admin_notices', 'iwdf_email_admin_notice__success' );
 
 function iwdf_email_admin_notice__error() {
-	if ( is_admin() && 'no' == $_GET['email_success'] ) {
+	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'no' == $_GET['email_success'] ) {
 		$class   = 'notice notice-error is-dismissible';
 		$message = __( 'Email not sent.', 'gf-form-recovery-tool' );
 
