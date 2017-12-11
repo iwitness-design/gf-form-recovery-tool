@@ -221,7 +221,7 @@ function iwdf_emailer( $gfuuid, $email, $source_url ) {
  * Email All users with lost forms
  */
 function iwdf_email_all() {
-	if ( is_admin() && 'gf-form-recovery-tool' == $_GET['page'] && 'true' == $_GET['email_all'] ) {
+	if ( is_admin() && ! empty( $_GET['page'] ) && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $_GET['email_all'] ) && 'true' == $_GET['email_all'] ) {
 
 		global $wpdb;
 
@@ -284,7 +284,7 @@ add_action( 'admin_init', 'iwdf_email_single' );
 function iwdf_email_admin_notice__success() {
 
 	// single email success
-	if ( is_admin() && 'yes' == $_GET['email_success'] ) {
+	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'yes' == $_GET['email_success'] ) {
 		?>
         <div class="notice notice-success is-dismissible">
             <p><?php _e( 'Email sent successfully.', 'gf-form-recovery-tool' ); ?></p>
@@ -293,7 +293,7 @@ function iwdf_email_admin_notice__success() {
 	}
 
 	// after a whole loop of emails success
-	if ( is_admin() && 'yes' == $_GET['email_all_success'] ) {
+	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'yes' == $_GET['email_all_success'] ) {
 		?>
         <div class="notice notice-success is-dismissible">
             <p><?php _e( 'Emails sent successfully to ALL forms with an email address.', 'gf-form-recovery-tool' ); ?></p>
@@ -305,7 +305,7 @@ function iwdf_email_admin_notice__success() {
 add_action( 'admin_notices', 'iwdf_email_admin_notice__success' );
 
 function iwdf_email_admin_notice__error() {
-	if ( is_admin() && 'no' == $_GET['email_success'] ) {
+	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'no' == $_GET['email_success'] ) {
 		$class   = 'notice notice-error is-dismissible';
 		$message = __( 'Email not sent.', 'gf-form-recovery-tool' );
 
