@@ -110,20 +110,20 @@ function iwdf_form_recovery_metabox() {
 function iwdf_theme_options_page_output( $hookup ) {
 	// Output custom markup for the options-page.
 	?>
-    <div class="wrap cmb2-options-page option-<?php echo $hookup->option_key; ?>">
+	<div class="wrap cmb2-options-page option-<?php echo $hookup->option_key; ?>">
 		<?php if ( $hookup->cmb->prop( 'title' ) ) : ?>
-            <h2><?php echo wp_kses_post( $hookup->cmb->prop( 'title' ) ); ?></h2>
+			<h2><?php echo wp_kses_post( $hookup->cmb->prop( 'title' ) ); ?></h2>
 		<?php endif; ?>
 		<?php if ( $hookup->cmb->prop( 'description' ) ) : ?>
-            <h2><?php echo wp_kses_post( $hookup->cmb->prop( 'description' ) ); ?></h2>
+			<h2><?php echo wp_kses_post( $hookup->cmb->prop( 'description' ) ); ?></h2>
 		<?php endif; ?>
-        <form class="cmb-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST"
-              id="<?php echo $hookup->cmb->cmb_id; ?>" enctype="multipart/form-data" encoding="multipart/form-data">
-            <input type="hidden" name="action" value="<?php echo esc_attr( $hookup->option_key ); ?>">
+		<form class="cmb-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST"
+			  id="<?php echo $hookup->cmb->cmb_id; ?>" enctype="multipart/form-data" encoding="multipart/form-data">
+			<input type="hidden" name="action" value="<?php echo esc_attr( $hookup->option_key ); ?>">
 			<?php $hookup->options_page_metabox(); ?>
 			<?php submit_button( esc_attr( $hookup->cmb->prop( 'save_button' ) ), 'primary', 'submit-cmb' ); ?>
-        </form>
-    </div>
+		</form>
+	</div>
 	<?php
 	iwdf_gf_form_recovery_tool_admin();
 }
@@ -154,17 +154,17 @@ function iwdf_gf_form_recovery_tool_admin() {
 
 	if ( $incomplete_submissions ) { ?>
 
-        <p><?php esc_html_e( 'Below you can find all the incomplete Gravity Forms form submissions.', 'gf-form-recovery-tool' ); ?></p>
-        <table class="widefat">
-            <tr>
-                <th><?php esc_html_e( 'Form ID', 'gf-form-recovery-tool' ); ?></th>
-                <th><?php esc_html_e( 'Date/Time Created', 'gf-form-recovery-tool' ); ?></th>
-                <th><?php esc_html_e( 'Email Address', 'gf-form-recovery-tool' ); ?></th>
-                <th><?php esc_html_e( 'IP Address', 'gf-form-recovery-tool' ); ?></th>
-                <th><?php esc_html_e( 'UUID', 'gf-form-recovery-tool' ); ?></th>
-                <th><?php esc_html_e( 'Link', 'gf-form-recovery-tool' ); ?></th>
-                <th><?php esc_html_e( 'Email Link', 'gf-form-recovery-tool' ); ?></th>
-            </tr>
+		<p><?php esc_html_e( 'Below you can find all the incomplete Gravity Forms form submissions.', 'gf-form-recovery-tool' ); ?></p>
+		<table class="widefat">
+			<tr>
+				<th><?php esc_html_e( 'Form ID', 'gf-form-recovery-tool' ); ?></th>
+				<th><?php esc_html_e( 'Date/Time Created', 'gf-form-recovery-tool' ); ?></th>
+				<th><?php esc_html_e( 'Email Address', 'gf-form-recovery-tool' ); ?></th>
+				<th><?php esc_html_e( 'IP Address', 'gf-form-recovery-tool' ); ?></th>
+				<th><?php esc_html_e( 'UUID', 'gf-form-recovery-tool' ); ?></th>
+				<th><?php esc_html_e( 'Link', 'gf-form-recovery-tool' ); ?></th>
+				<th><?php esc_html_e( 'Email Link', 'gf-form-recovery-tool' ); ?></th>
+			</tr>
 
 			<?php
 			foreach ( $incomplete_submissions as $incomplete_submission ) {
@@ -184,7 +184,7 @@ function iwdf_gf_form_recovery_tool_admin() {
 				echo '</tr>';
 			}
 			?>
-        </table>
+		</table>
 
 		<?php
 	} else {
@@ -232,9 +232,9 @@ function iwdf_email_all() {
 		$allowed_ips = iwdf_get_option( '_iwdf_email_ip_addresses' );
 		$visitor_ip  = get_visitor_ip();
 
-		if ( !in_array( $visitor_ip, $allowed_ips ) ) {
-		    return;
-        }
+		if ( ! in_array( $visitor_ip, $allowed_ips ) ) {
+			return;
+		}
 
 		global $wpdb;
 
@@ -253,7 +253,6 @@ function iwdf_email_all() {
 		}
 
 		die( true );
-        return true;
 
 	}
 }
@@ -299,9 +298,9 @@ function iwdf_email_admin_notice__success() {
 	// single email success
 	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'yes' == $_GET['email_success'] ) {
 		?>
-        <div class="notice notice-success is-dismissible">
-            <p><?php _e( 'Email sent successfully.', 'gf-form-recovery-tool' ); ?></p>
-        </div>
+		<div class="notice notice-success is-dismissible">
+			<p><?php _e( 'Email sent successfully.', 'gf-form-recovery-tool' ); ?></p>
+		</div>
 		<?php
 	}
 
