@@ -7,7 +7,6 @@ Author: iWitness Design, Topher
 Author URI: https://iwitnessdesign.com
 Text Domain: gf-form-recovery-tool
 License: GPLv2 or Later
-License URI: LICENSE
 */
 
 // Exit if accessed directly.
@@ -95,9 +94,16 @@ function iwdf_form_recovery_metabox() {
 
 	$cmb_options->add_field( array(
 		'name'        => 'Email All URL',
-		'description' => 'Visiting this URL will cause all listings below that have an email address to get an email reminder. Please use an external scheduler to call it. <hr> http://craft3.dev/wp-admin/tools.php?page=gf-form-recovery-tool&email_all=true',
+		'description' => 'Visiting this URL will cause all listings below that have an email address to get an email reminder. Please use an external scheduler to call it. <hr> http://craft3.dev/?email_all=true <br><br> NOTE: only IP addresses listed below may call this URL to send email',
 		'id'          => $prefix . 'all',
 		'type'        => 'title',
+	) );
+
+	$cmb_options->add_field( array(
+		'name'       => 'Allowed IP addressses',
+		'id'         => $prefix . 'ip_addresses',
+		'type'       => 'text',
+		'repeatable' => true,
 	) );
 }
 
@@ -192,7 +198,7 @@ function iwdf_gf_form_recovery_tool_admin() {
  * Email engine
  */
 function iwdf_emailer( $gfuuid, $email, $source_url ) {
-	if ( is_admin() && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $gfuuid ) && is_email( $email ) && ! empty( $source_url ) ) {
+	if ( ! empty( $gfuuid ) && is_email( $email ) && ! empty( $source_url ) ) {
 
 
 		$mail_subject = iwdf_get_option( '_iwdf_email_subject' );
@@ -221,7 +227,14 @@ function iwdf_emailer( $gfuuid, $email, $source_url ) {
  * Email All users with lost forms
  */
 function iwdf_email_all() {
-	if ( is_admin() && ! empty( $_GET['page'] ) && 'gf-form-recovery-tool' == $_GET['page'] && ! empty( $_GET['email_all'] ) && 'true' == $_GET['email_all'] ) {
+	if ( ! empty( $_GET['email_all'] ) && 'true' == $_GET['email_all'] ) {
+
+		$allowed_ips = iwdf_get_option( '_iwdf_email_ip_addresses' );
+		$visitor_ip  = get_visitor_ip();
+
+		if ( !in_array( $visitor_ip, $allowed_ips ) ) {
+		    return;
+        }
 
 		global $wpdb;
 
@@ -239,13 +252,13 @@ function iwdf_email_all() {
 			iwdf_emailer( $submission->uuid, $submission->email, $submission->source_url );
 		}
 
-		wp_redirect( admin_url( 'tools.php?page=gf-form-recovery-tool&email_all_success=yes' ) );
-		exit;
+		die( true );
+        return true;
 
 	}
 }
 
-add_action( 'admin_init', 'iwdf_email_all' );
+add_action( 'init', 'iwdf_email_all' );
 
 
 /*
@@ -292,14 +305,6 @@ function iwdf_email_admin_notice__success() {
 		<?php
 	}
 
-	// after a whole loop of emails success
-	if ( is_admin() && ! empty( $_GET['email_success'] ) && 'yes' == $_GET['email_all_success'] ) {
-		?>
-        <div class="notice notice-success is-dismissible">
-            <p><?php _e( 'Emails sent successfully to ALL forms with an email address.', 'gf-form-recovery-tool' ); ?></p>
-        </div>
-		<?php
-	}
 }
 
 add_action( 'admin_notices', 'iwdf_email_admin_notice__success' );
@@ -339,4 +344,29 @@ function iwdf_get_option( $key = '', $default = false ) {
 	}
 
 	return $val;
+}
+
+/**
+ * Get visitor's IP address
+ */
+function get_visitor_ip() {
+	foreach (
+		array(
+			'HTTP_CLIENT_IP',
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_FORWARDED',
+			'HTTP_X_CLUSTER_CLIENT_IP',
+			'HTTP_FORWARDED_FOR',
+			'HTTP_FORWARDED',
+			'REMOTE_ADDR'
+		) as $key
+	) {
+		if ( array_key_exists( $key, $_SERVER ) === true ) {
+			foreach ( explode( ',', $_SERVER[ $key ] ) as $ip ) {
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) !== false ) {
+					return $ip;
+				}
+			}
+		}
+	}
 }
