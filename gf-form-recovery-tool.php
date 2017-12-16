@@ -244,7 +244,9 @@ function iwdf_link_to_incomplete() {
 		'SELECT email, uuid, source_url FROM `' . esc_sql( $table_name ) . "` WHERE `email` = '" . $current_user->user_email . "'"
 	);
 
-	$incomplete = $incomplete[0];
+	if ( ! empty( $incomplete) ) {
+		$incomplete = $incomplete[0];
+	}
 
 	if ( ! empty( $incomplete ) && ! isset( $_GET['gf_token'] ) ) {
 		$output .= 'Welcome back ' . $current_user->display_name . '! It looks like you have an incomplete form to fill out, please <a href="' . trailingslashit( esc_url( $incomplete->source_url ) ) . '?gf_token=' . esc_attr( $incomplete->uuid ) . '">click here</a> to continue that form.';
