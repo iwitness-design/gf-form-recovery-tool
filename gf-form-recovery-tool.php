@@ -6,7 +6,6 @@ Version: 1.0.0
 Author: iWitness Design, Topher
 Author URI: https://iwitnessdesign.com
 Text Domain: gf-form-recovery-tool
-License: GPLv2 or Later
 */
 
 // Exit if accessed directly.
@@ -222,6 +221,43 @@ function iwdf_emailer( $gfuuid, $email, $source_url ) {
 
 	}
 }
+
+
+/*
+ * Check for incomplete and render message linking to it if exists
+ */
+function iwdf_link_to_incomplete() {
+
+	$current_user = wp_get_current_user();
+
+	$output = '';
+
+	global $wpdb;
+
+	// go get the data about this row
+
+	// Make sure we're using the right database prefix
+	$table_name = $wpdb->prefix . 'rg_incomplete_submissions';
+
+	// Grab incomplete submissions
+	$incomplete = $wpdb->get_results(
+		'SELECT email, uuid, source_url FROM `' . esc_sql( $table_name ) . "` WHERE `email` = '" . $current_user->user_email . "'"
+	);
+
+	$incomplete = $incomplete[0];
+
+	if ( ! empty( $incomplete ) && ! isset( $_GET['gf_token'] ) ) {
+		$output .= 'Welcome back ' . $current_user->display_name . '! It looks like you have an incomplete form to fill out, please <a href="' . trailingslashit( esc_url( $incomplete->source_url ) ) . '?gf_token=' . esc_attr( $incomplete->uuid ) . '">click here</a> to continue that form.';
+	} else {
+		$output .= do_shortcode( '[gravityform id="5" title="false" description="false" ajax="true"]' );
+	}
+
+
+	return $output;
+
+}
+
+add_shortcode( 'incomplete_forms', 'iwdf_link_to_incomplete' );
 
 /*
  * Email All users with lost forms
